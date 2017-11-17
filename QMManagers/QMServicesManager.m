@@ -178,7 +178,7 @@
                     QMSLog(@"Failed to join room with error: %@", error.localizedDescription);
                 }
                 else {
-                    [self.chatService.deferredQueueManager performDeferredActionsForDialogWithID:dialog.ID];
+//                    [self.chatService.deferredQueueManager performDeferredActionsForDialogWithID:dialog.ID];
                 }
                 
                 dispatch_group_leave(self.joinGroup);

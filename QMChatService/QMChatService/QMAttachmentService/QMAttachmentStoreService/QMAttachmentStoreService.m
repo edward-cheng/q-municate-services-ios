@@ -190,7 +190,7 @@
         dialogID:(NSString *)dialogID
       completion:(dispatch_block_t)completion {
     
-    NSAssert(attachment.ID, @"No ID");
+//    NSAssert(attachment.ID, @"No ID");
     NSAssert(messageID, @"No ID");
     NSAssert(dialogID, @"No ID");
     NSAssert(data.length, @"No data");
@@ -222,6 +222,12 @@
             }
             
             QMSLog(@"CREATE FILE AT PATH %@", pathToFile);
+            
+            //如果是录音文件则缓存到本地后删除原录音文件
+            if (attachment.attachmentType==QMAttachmentContentTypeAudio) {
+                NSString *oldAudioFilePath = attachment.localFileURL.path;
+                [_fileManager removeItemAtPath:oldAudioFilePath error:nil];
+            }
             
             if  (![_fileManager createFileAtPath:pathToFile contents:data attributes:nil]) {
                 QMSLog(@"Error was code: %d - message: %s", errno, strerror(errno));

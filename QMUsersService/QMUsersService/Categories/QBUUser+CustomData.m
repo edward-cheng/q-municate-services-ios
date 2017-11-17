@@ -13,6 +13,7 @@
 NSString *const kQMAvatarUrlKey = @"avatar_url";
 NSString *const kQMStatusKey = @"status";
 NSString *const kQMIsImportKey = @"is_import";
+NSString *const kQMUserAge = @"age";
 
 @implementation QBUUser (QMAssociatedObject)
 
@@ -89,6 +90,7 @@ NSString *const kQMIsImportKey = @"is_import";
 @dynamic avatarUrl;
 @dynamic status;
 @dynamic isImport;
+@dynamic age;
 
 //MARK: - Is import
 
@@ -128,6 +130,15 @@ NSString *const kQMIsImportKey = @"is_import";
 - (NSString *)avatarUrl {
     
     return self.context[kQMAvatarUrlKey];
+}
+
+- (void)setAge:(NSString *)age{
+    self.context[kQMUserAge] = [age copy];
+    [self synchronize];
+}
+
+- (NSString *)age{
+    return self.context[kQMUserAge];
 }
 
 @end

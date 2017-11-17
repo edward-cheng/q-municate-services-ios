@@ -504,6 +504,11 @@ typedef void(^QMCacheCollection)(NSArray * _Nullable collection);
 //
 //- (QMLinkPreview *)linkPreviewForMessage:(QBChatMessage *)message;
 
+//预发送message加缓存
+- (void)prepareToSendMessage:(QBChatMessage *)message ToDialog:(QBChatDialog *)dialog Completion:(dispatch_block_t)completion;
+//刷新本地和内存huan'cun
+- (void)diskAndMemoryCacheMessage:(QBChatMessage *)message ToDialog:(QBChatDialog *)dialog;
+
 @end
 
 //MARK: - Bolts
@@ -1096,6 +1101,14 @@ typedef void(^QMCacheCollection)(NSArray * _Nullable collection);
  *  @param dialog QBChatDialog from notification message
  */
 - (void)chatService:(QMChatService *)chatService didReceiveNotificationMessage:(QBChatMessage *)message createDialog:(QBChatDialog *)dialog;
+
+/**
+ *  Is called when chat service did receive message during video
+ *
+ *  @param chatService instance
+ *  @param message received video message
+ */
+- (void)chatService:(QMChatService *)chatService didReceiveMessageDuringVideo:(QBChatMessage *)message;
 
 @end
 

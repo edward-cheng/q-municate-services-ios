@@ -167,19 +167,19 @@
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
-    if ([fileManager fileExistsAtPath:[sourceURL path]]) {
-        targetURL = sourceURL;
-        needMigrate = YES;
-    }
-    
-    if ([fileManager fileExistsAtPath:[groupURL path]]) {
-        needMigrate = NO;
-        targetURL = groupURL;
-        
-       if ([fileManager fileExistsAtPath:[sourceURL path]]) {
-            needDeleteOld = YES;
-        }
-    }
+//    if ([fileManager fileExistsAtPath:[sourceURL path]]) {
+//        targetURL = sourceURL;
+//        needMigrate = YES;
+//    }
+//
+//    if ([fileManager fileExistsAtPath:[groupURL path]]) {
+//        needMigrate = NO;
+//        targetURL = groupURL;
+//
+//       if ([fileManager fileExistsAtPath:[sourceURL path]]) {
+//            needDeleteOld = YES;
+//        }
+//    }
     
     if (targetURL == nil) {
         targetURL = groupURL;

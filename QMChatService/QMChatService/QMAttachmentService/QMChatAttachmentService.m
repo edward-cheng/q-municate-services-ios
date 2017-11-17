@@ -285,7 +285,7 @@
                             attachment:(QBChatAttachment *)attachment
                             completion:(QBChatCompletionBlock)completion {
     
-    [chatService.deferredQueueManager addOrUpdateMessage:message];
+//    [chatService.deferredQueueManager addOrUpdateMessage:message];
     
     [self uploadAttachmentMessage:message
                          toDialog:dialog
@@ -306,7 +306,11 @@
                                              completion:completion];
                            }
                            else {
-                               [chatService.deferredQueueManager addOrUpdateMessage:message];
+//                               [chatService.deferredQueueManager addOrUpdateMessage:message];
+                               NSMutableDictionary *customData = message.customParameters;
+                               customData[@"message_deliveryState"] = error ? @(4) : @(3);
+                               message.customParameters = customData;
+                               [chatService diskAndMemoryCacheMessage:message ToDialog:dialog];
                                if (completion) {
                                    completion(error);
                                }
@@ -395,21 +399,8 @@
          }
          if (fileURL) {
              QMSLog(@"_UPLOAD 3 has file URL %@",message.ID);
-             [self changeMessageAttachmentStatus:QMMessageAttachmentStatusLoaded
-                                      forMessage:message];
+             [self changeMessageAttachmentStatus:QMMessageAttachmentStatusUploading forMessage:message];
              attachment.localFileURL = fileURL;
-             completion(nil,attachmentOperation.isCancelled);
-             [self safelyRemoveOperationFromRunning:strongOperation];
-         }
-         else {
-             if ([self attachmentStatusForMessage:message] == QMMessageAttachmentStatusUploading) {
-                 QMSLog(@"_UPLOAD 4 STATUS IS LOADING ID ID: %@", message.ID);
-                 return;
-             }
-             
-             [self changeMessageAttachmentStatus:QMMessageAttachmentStatusUploading
-                                      forMessage:message];
-             
              
              void(^operationCompletionBlock)(QMUploadOperation *operation) = ^(QMUploadOperation *operation)
              {
@@ -421,44 +412,45 @@
                      [self changeMessageAttachmentStatus:QMMessageAttachmentStatusNotLoaded
                                               forMessage:message];
                      return;
-                 }
-                 else if (error) {
-                     [self changeMessageAttachmentStatus:QMMessageAttachmentStatusNotLoaded
+                 }else if (error) {//这里可以更改为QMMessageAttachmentStatusError
+                     [self changeMessageAttachmentStatus:QMMessageAttachmentStatusError
                                               forMessage:message];
                      [self safelyRemoveOperationFromRunning:strongOperation];
                      completion(error,attachmentOperation.isCancelled);
-                 }
-                 else {
-                     
-                     [self.storeService storeAttachment:attachment
-                                               withData:nil
-                                              cacheType:QMAttachmentCacheTypeDisc|QMAttachmentCacheTypeMemory
-                                              messageID:message.ID
-                                               dialogID:message.dialogID
-                                             completion:^{
-                                                 
-                                                 if (strongOperation && !strongOperation.isCancelled) {
-                                                     [self changeMessageAttachmentStatus:QMMessageAttachmentStatusLoaded
-                                                                              forMessage:message];
-                                                     
-                                                     completion(nil,attachmentOperation.isCancelled);
-                                                     [self safelyRemoveOperationFromRunning:strongOperation];
-                                                 }
-                                                 else {
-                                                     [self safelyRemoveOperationFromRunning:strongOperation];
-                                                 }
-                                             }];
+                 }else {
+                     if (strongOperation && !strongOperation.isCancelled) {
+                         [self changeMessageAttachmentStatus:QMMessageAttachmentStatusLoaded
+                                                  forMessage:message];
+                         
+                         completion(nil,attachmentOperation.isCancelled);
+                         [self safelyRemoveOperationFromRunning:strongOperation];
+                     }else {
+                         [self safelyRemoveOperationFromRunning:strongOperation];
+                     }
                  }
              };
              
              if (attachment.attachmentType == QMAttachmentContentTypeImage) {
                  NSData *imageData = [self.storeService dataForImage:attachment.image];
+                 if (imageData==nil) {
+                     imageData = [NSData dataWithContentsOfURL:attachment.localFileURL];
+                 }
                  [self.contentService uploadAttachment:attachment messageID:message.ID withData:imageData progressBlock:progressBlock completionBlock:operationCompletionBlock];
+             }else {
+                 if (attachment.attachmentType==QMAttachmentContentTypeCustom&&[attachment.type isEqualToString:@"Snapchat"]) {
+                     NSData *imageData = [self.storeService dataForImage:attachment.image];
+                     if (imageData==nil) {
+                         imageData = [NSData dataWithContentsOfURL:attachment.localFileURL];
+                     }
+                     [self.contentService uploadAttachment:attachment messageID:message.ID withData:imageData progressBlock:progressBlock completionBlock:operationCompletionBlock];
+                 }else{
+                     [self.contentService
+                      uploadAttachment:attachment messageID:message.ID withFileURL:attachment.localFileURL progressBlock:progressBlock completionBlock:operationCompletionBlock];
+                 }
              }
-             else {
-                 [self.contentService
-                  uploadAttachment:attachment messageID:message.ID withFileURL:attachment.localFileURL progressBlock:progressBlock completionBlock:operationCompletionBlock];
-             }
+         }
+         else {
+             NSAssert(0, @"上传附件前必须先把附件缓存到本地");
          }
      }];
     
@@ -640,7 +632,12 @@
                                                        messageID:message.ID
                                                         dialogID:message.dialogID];
         if (fileURL != nil) {
-            status = QMMessageAttachmentStatusLoaded;
+            BOOL uploading = [self.contentService isUploadingMessageWithID:message.ID];
+            if (uploading) {
+                status = QMMessageAttachmentStatusUploading;
+            }else{
+                status = QMMessageAttachmentStatusLoaded;
+            }
         }
         else {
             BOOL downloading = [self.contentService isDownloadingMessageWithID:message.ID];
