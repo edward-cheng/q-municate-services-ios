@@ -154,7 +154,7 @@
               dialogID:(NSString *)dialogID
             completion:(dispatch_block_t)completion {
     
-    NSAssert(attachment.ID, @"No ID");
+//    NSAssert(attachment.ID, @"No  ID");
     NSAssert(messageID, @"No ID");
     NSAssert(dialogID, @"No ID");
     
