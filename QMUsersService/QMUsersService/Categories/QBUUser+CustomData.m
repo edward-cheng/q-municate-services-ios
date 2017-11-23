@@ -14,6 +14,7 @@ NSString *const kQMAvatarUrlKey = @"avatar_url";
 NSString *const kQMStatusKey = @"status";
 NSString *const kQMIsImportKey = @"is_import";
 NSString *const kQMUserAge = @"age";
+NSString *const kQMUserSex = @"sex";
 
 @implementation QBUUser (QMAssociatedObject)
 
@@ -91,6 +92,7 @@ NSString *const kQMUserAge = @"age";
 @dynamic status;
 @dynamic isImport;
 @dynamic age;
+@dynamic sex;
 
 //MARK: - Is import
 
@@ -139,6 +141,16 @@ NSString *const kQMUserAge = @"age";
 
 - (NSString *)age{
     return self.context[kQMUserAge];
+}
+
+- (void)setSex:(BOOL)sex{
+    self.context[kQMUserSex] = @(sex);
+    [self synchronize];
+}
+
+- (BOOL)sex{
+    NSNumber *sex = self.context[kQMUserSex];
+    return sex.boolValue;
 }
 
 @end

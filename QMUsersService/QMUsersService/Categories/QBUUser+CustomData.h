@@ -42,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, nonatomic, nullable) NSString *status;
 @property (assign, nonatomic) BOOL isImport;
 @property (copy, nonatomic, nullable) NSString *age;
+@property (assign, nonatomic)BOOL sex;//0 female 1 male
 
 @end
 
