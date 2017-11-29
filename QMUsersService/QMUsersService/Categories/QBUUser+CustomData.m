@@ -140,7 +140,7 @@ NSString *const kQMUserSex = @"sex";
 }
 
 - (NSString *)age{
-    return self.context[kQMUserAge];
+    return [NSString stringWithFormat:@"%@",self.context[kQMUserAge]];
 }
 
 - (void)setSex:(BOOL)sex{
